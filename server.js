@@ -1,12 +1,12 @@
 const twilio = require('twilio');
-const Hapi = require('Hapi');
+const Hapi = require('hapi');
 const log = require('winston');
 const http = require('superagent');
 
 const numberToWords = require('number-to-words');
 
 const PORT = process.env.PORT || 3000;
-const HOST = process.env.PORT || '0.0.0.0';
+const HOST = process.env.HOST || '0.0.0.0';
 
 const BTC_PRICE_URL = 'https://api.coinmarketcap.com/v1/ticker/Bitcoin/';
 
@@ -26,11 +26,17 @@ async function getBitcoinPrice() {
 function buildResponse(bitcoinPrice) {
 
   const twiml = new twilio.twiml.VoiceResponse();
-  twiml.say(`The current cash price of bitcoin is
+  twiml.say(`The current cash price of bit coin is
   ${numberToWords.toWords(bitcoinPrice)} dollars.`);
 
-  twiml.say(`Free State Bitcoin Shoppe is located at 56 State Street in
-Portsmouth, New Hampshire`);
+  twiml.say(`Free State Bitcoin Shop is located at 56 State Street in Portsmouth, New Hampshire`);
+
+  twiml.say(`Please leave a message with your name and phone number and an associate will reply accordingly`); 
+  twiml.record({
+    action: 'http://149.56.89.146:3232/voicemails',
+    method: 'POST'
+  });
+  twiml.hangup();
 
   return twiml.toString();
 } 
@@ -64,11 +70,29 @@ server.route({
     method: 'post',
     path:'/calls', 
     handler: function (request, reply) {
+        log.info('received a call');
         let bitcoinPrice = BitcoinPrice.get();
 
         let resp = buildResponse(bitcoinPrice);
 
-        return reply(resp).type('xml');
+        return reply(resp).type('text/xml');
+    }
+});
+
+server.route({
+    method: 'post',
+    path:'/voicemails', 
+    handler: async function (request, reply) {
+        log.info('received a voice mail', request.payload);
+        var slackUrl = 'https://hooks.slack.com/services/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';
+
+        await http
+          .post(slackUrl)
+          .send({
+            text: request.payload.RecordingUrl
+          })
+
+        return reply().code(200);
     }
 });
 
