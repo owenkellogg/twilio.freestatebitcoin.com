@@ -1,0 +1,19 @@
+{
+  "name": "twilio.freestatebitcoin.com",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "hapi": "^16.4.3",
+    "number-to-words": "^1.2.3",
+    "superagent": "^3.8.1",
+    "twilio": "^3.10.0",
+    "winston": "^2.4.0"
+  }
+}
